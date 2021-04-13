@@ -9,6 +9,7 @@ class DkChallengeApplicationTests {
 
 	@Test
 	void runTest() {
+		System.out.println("\n-----Tests-----\n");
 		Driver d = new Driver();
 		String args[] = {"5", "src/main/resources/latestSwing.csv"};
 		d.run(args);

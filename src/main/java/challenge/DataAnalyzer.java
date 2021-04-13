@@ -14,12 +14,22 @@ public class DataAnalyzer
 	public int searchContinuityAboveValue(EntryContainer data, int indexBegin, int indexEnd,
 			  							  double threshold, int winLength)
 										 throws NoSuchElementException
+	{ 
+		return searchContinuityAboveValuePair(data, indexBegin, indexEnd, threshold, winLength).first;
+	}
+	
+										 
+	public Pair<Integer,Integer> searchContinuityAboveValuePair(EntryContainer data,
+								int indexBegin, int indexEnd,
+								double threshold, int winLength)
+							   throws NoSuchElementException								 
 	{
 		var rangeList = data.getRangeList();
 		var dataArr = data.getDataArr();
 		
-		if(rangeList.size() <= 0) return -1;
-			int groupSize = rangeList.get(0).size;
+		if(rangeList.size() <= 0) throw new NoSuchElementException();
+		
+		int groupSize = rangeList.get(0).size;
 
 		int index = indexBegin;
 		int groupIndex = indexBegin / groupSize;
@@ -50,7 +60,7 @@ public class DataAnalyzer
 				if(index % groupSize == 0) groupIndex++;
 			}
 
-			if(runCount >= winLength) return indexBegin;
+			if(runCount >= winLength) return new Pair<Integer,Integer>(indexBegin,index);
 
 		}
 
@@ -66,7 +76,7 @@ public class DataAnalyzer
 		var rangeList = data.getRangeList();
 		var dataArr = data.getDataArr();
 		
-		if(rangeList.size() <= 0) return -1;
+		if(rangeList.size() <= 0) throw new NoSuchElementException();
 		int groupSize = rangeList.get(0).size;
 
 		int index = indexBegin;
@@ -115,62 +125,30 @@ public class DataAnalyzer
 												   throws NoSuchElementException
 	{
 		var rangeList1 = data1.getRangeList();
-		var dataArr1 = data1.getDataArr();
 		var rangeList2 = data2.getRangeList();
 		
-		if(rangeList1.size() <= 0 || rangeList2.size() <= 0) return -1;
-		
-		int groupSize1 = rangeList1.get(0).size;
+		if(rangeList1.size() <= 0 || rangeList2.size() <= 0) throw new NoSuchElementException();
 
 		int index = indexBegin;
-		int groupIndex = indexBegin / groupSize1;
-		int runCount = 0;
 
 		while(index <= indexEnd)
 		{
-			// if entire group is valid, then jump over it
-			if(index % groupSize1 == 0 &&
-			   rangeList1.get(groupIndex).min >= threshold1)
-			{
-				runCount += rangeList1.get(groupIndex).size;
-				index += rangeList1.get(groupIndex).size;
-				groupIndex++;
-			}
-			else
-			{
-				// otherwise, search through each value inside
-				double val = dataArr1.get(index);
-				if(val >= threshold1) runCount++;
-				else
-				{
-					// if we find the end of the valid range of the first data set, then
-					// see if the second data set has a valid range inside
-					if(runCount >= winLength)
-					{
-						int result2 = searchContinuityAboveValue(data2, indexBegin, index,
-																 threshold2, winLength);
-						if(result2 > 0) return result2;
-					}
-					
-					runCount = 0;
-					indexBegin = index + 1;
-				}
-
-				index++;
-				if(index % groupSize1 == 0) groupIndex++;
-			}
-
-		}
-		
-		if(runCount >= winLength)
-		{
+			Pair<Integer,Integer> res1 = searchContinuityAboveValuePair(data1, indexBegin, indexEnd,
+					threshold1, winLength);
+			
 			try
 			{
-				int result2 = searchContinuityAboveValue(data2, indexBegin, index,
-													 	 threshold2, winLength);
-				return result2;
+				// if we find the end of the valid range of the first data set, then
+				// see if the second data set has a valid range inside
+				int res2 = searchContinuityAboveValue(data2, res1.first, res1.second, threshold2,
+													  winLength);
+				return res2;
 			}
-			catch(NoSuchElementException e) {}
+			catch(NoSuchElementException e)
+			{
+				indexBegin = res1.second + 1;
+				index = indexBegin;
+			}
 		}
 
 		throw new NoSuchElementException();
@@ -230,6 +208,7 @@ public class DataAnalyzer
 
 		return result;
 	}
+	
 	
 	
 	// Linear methods, for comparison
@@ -319,6 +298,37 @@ public class DataAnalyzer
 		}
 		
 		throw new NoSuchElementException();
+	}
+	
+	ArrayList<Pair<Integer,Integer>> smcwr_lin(EntryContainer data, int indexBegin, int indexEnd,
+			  							       double thresholdLo, double thresholdHi, int winLength)
+	{
+		var dataArr = data.getDataArr();
+		
+		ArrayList<Pair<Integer, Integer>> result = new ArrayList<Pair<Integer, Integer>>();
+		
+		int index = indexBegin;
+		int runCount = 0;
+		
+		while(index <= indexEnd)
+		{
+			if(dataArr.get(index) >= thresholdLo && dataArr.get(index) <= thresholdHi)
+				runCount++;
+			else
+			{
+				if(runCount >= winLength)
+					result.add(new Pair<Integer,Integer>(indexBegin, index - 1));
+				
+				runCount = 0;
+				indexBegin = index + 1;
+			}
+			index++;
+		}
+		
+		if(runCount >= winLength)
+			result.add(new Pair<Integer,Integer>(indexBegin, index - 1));
+		
+		return result;
 	}
 }
 
