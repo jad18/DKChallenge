@@ -1,5 +1,7 @@
 package challenge;
 
+import java.util.NoSuchElementException;
+
 public class Driver
 {
 	
@@ -20,23 +22,34 @@ public class Driver
 		
 		DataContainer dc = new DataContainer(groupSize, args[1]);
 		DataAnalyzer da = new DataAnalyzer();
-			
-		System.out.println(da.searchContinuityAboveValue(dc.getWz(), 582, 888, 1.5, 121));
-		System.out.println(da.backSearchContinuityWithinRange(
-						   	    dc.getAy(), 100, 500, 0.1, 0.2, groupSize));
-		System.out.println(da.searchContinuityAboveValueTwoSignals(
-								dc.getAy(), dc.getWx(), 50, 1000, 0.23, 2.2, 5));
 		
-		var res3 = da.searchMultiContinuityWithinRange(dc.getAz(), 302, 1100, -0.5, 0, 10);
-		System.out.println("\n[");
-		for(var value : res3)
-			System.out.println("  (" + value.first.toString() + " to " + value.second.toString() + ")");
-		System.out.println("]");
+		try
+		{
+			int res1 = da.searchContinuityAboveValue(dc.getWz(), 582, 888, 1.5, 121);
+			System.out.println(res1);
 		
-		System.out.println("\nLinear Results, for comparison:");
-		System.out.println(da.scav_lin(dc.getWz(), 582, 888, 1.5, 121));
-		System.out.println(da.bscwr_lin(dc.getAy(), 100, 500, 0.1, 0.2, groupSize));
-		System.out.println(da.scavts_lin(dc.getAy(), dc.getWx(), 50, 1000, 0.23, 2.2, 5));
+			int res2 = da.backSearchContinuityWithinRange(dc.getAy(), 100, 500, 0.1, 0.2, groupSize);
+			System.out.println(res2);
+		
+			int res3 = da.searchContinuityAboveValueTwoSignals(dc.getAy(), dc.getWx(), 50, 1000,
+														   	   0.23, 2.2, 5);
+			System.out.println(res3);
+		
+			var res4 = da.searchMultiContinuityWithinRange(dc.getAz(), 302, 1100, -0.5, 0, 10);
+			System.out.println("\n[");
+			for(var value : res4)
+				System.out.println("  (" + value.first.toString() + " to " + value.second.toString() + ")");
+			System.out.println("]");
+		
+			System.out.println("\nMatches with linear scan results:");
+			System.out.println(res1 == da.scav_lin(dc.getWz(), 582, 888, 1.5, 121));
+			System.out.println(res2 == da.bscwr_lin(dc.getAy(), 100, 500, 0.1, 0.2, groupSize));
+			System.out.println(res3 == da.scavts_lin(dc.getAy(), dc.getWx(), 50, 1000, 0.23, 2.2, 5));
+		}
+		catch(NoSuchElementException e)
+		{
+			System.err.println("Error: index cannot be found");
+		}
 		
 	}
 

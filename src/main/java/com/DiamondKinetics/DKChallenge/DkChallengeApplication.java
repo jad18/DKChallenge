@@ -13,7 +13,7 @@ public class DkChallengeApplication {
 	 * 2) filename, a path to the .csv file
 	 */
 	public static void main(String[] args) {
-		//SpringApplication.run(DkChallengeApplication.class, args);
+		SpringApplication.run(DkChallengeApplication.class, args);
 		
 		System.out.println("\n-----Results-----\n");
 		

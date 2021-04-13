@@ -1,6 +1,8 @@
 package challenge;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
+
 
 public class DataAnalyzer
 {
@@ -11,6 +13,7 @@ public class DataAnalyzer
 	 */
 	public int searchContinuityAboveValue(EntryContainer data, int indexBegin, int indexEnd,
 			  							  double threshold, int winLength)
+										 throws NoSuchElementException
 	{
 		var rangeList = data.getRangeList();
 		var dataArr = data.getDataArr();
@@ -45,19 +48,20 @@ public class DataAnalyzer
 
 				index++;
 				if(index % groupSize == 0) groupIndex++;
-				}
+			}
 
 			if(runCount >= winLength) return indexBegin;
 
 		}
 
-		return -1;
+		throw new NoSuchElementException();
 	}
 
 
 
 	public int backSearchContinuityWithinRange(EntryContainer data, int indexBegin, int indexEnd,
 				   							   double thresholdLo, double thresholdHi, int winLength)
+				   							  throws NoSuchElementException
 	{
 		var rangeList = data.getRangeList();
 		var dataArr = data.getDataArr();
@@ -99,7 +103,7 @@ public class DataAnalyzer
 
 		}
 
-		return -1;
+		throw new NoSuchElementException();
 	}
 
 
@@ -107,6 +111,7 @@ public class DataAnalyzer
 													int indexBegin, int indexEnd,
 													double threshold1, double threshold2,
 													int winLength)
+												   throws NoSuchElementException
 	{
 		var rangeList1 = data1.getRangeList();
 		var dataArr1 = data1.getDataArr();
@@ -163,7 +168,7 @@ public class DataAnalyzer
 			if(result2 > 0) return result2;
 		}
 
-		return -1;
+		throw new NoSuchElementException();
 	}
 
 
@@ -215,7 +220,7 @@ public class DataAnalyzer
 			}
 		}
 
-		if(runCount > 0)
+		if(runCount >= winLength)
 			result.add(new Pair<Integer,Integer>(indexBegin, index - 1));
 
 		return result;
@@ -226,6 +231,7 @@ public class DataAnalyzer
 	
 	public int scav_lin(EntryContainer data, int indexBegin, int indexEnd,
 			 			double threshold, int winLength)
+			 		   throws NoSuchElementException
 	{
 		var dataArr = data.getDataArr();
 		int count = 0;
@@ -244,11 +250,12 @@ public class DataAnalyzer
 				indexBegin = i + 1;
 			}
 		}
-		return -1;
+		throw new NoSuchElementException();
 	}
 	
 	public int bscwr_lin(EntryContainer data, int indexBegin, int indexEnd,
-				 double thresholdLo, double thresholdHi, int winLength)
+				 		 double thresholdLo, double thresholdHi, int winLength)
+						throws NoSuchElementException
 	{
 		var dataArr = data.getDataArr();
 		int count = 0;
@@ -267,11 +274,12 @@ public class DataAnalyzer
 				indexBegin = i + 1;
 			}
 		}
-		return -1;
+		throw new NoSuchElementException();
 	}
 	
 	public int scavts_lin(EntryContainer data1, EntryContainer data2, int indexBegin,
 						  int indexEnd, double threshold1, double threshold2, int winLength)
+						 throws NoSuchElementException
 	{
 		var dataArr1 = data1.getDataArr();
 		int count = 0;
@@ -301,7 +309,7 @@ public class DataAnalyzer
 			if(result2 > 0) return result2;
 		}
 		
-		return -1;
+		throw new NoSuchElementException();
 	}
 }
 

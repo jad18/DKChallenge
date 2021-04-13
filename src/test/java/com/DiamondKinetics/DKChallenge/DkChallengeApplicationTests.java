@@ -1,13 +1,17 @@
 package com.DiamondKinetics.DKChallenge;
 
-import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.Test;
+import challenge.Driver;
 
 @SpringBootTest
 class DkChallengeApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void runTest() {
+		Driver d = new Driver();
+		String args[] = {"5", "src/main/resources/latestSwing.csv"};
+		d.run(args);
 	}
 
 }
