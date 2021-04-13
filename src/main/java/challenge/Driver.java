@@ -28,7 +28,7 @@ public class Driver
 			int res1 = da.searchContinuityAboveValue(dc.getWz(), 582, 888, 1.5, 121);
 			System.out.println(res1);
 		
-			int res2 = da.backSearchContinuityWithinRange(dc.getAy(), 100, 500, 0.1, 0.2, groupSize);
+			int res2 = da.backSearchContinuityWithinRange(dc.getAy(), 500, 100, 0.1, 0.2, 10);
 			System.out.println(res2);
 		
 			int res3 = da.searchContinuityAboveValueTwoSignals(dc.getAy(), dc.getWx(), 50, 1000,
@@ -43,7 +43,7 @@ public class Driver
 		
 			System.out.println("\nMatches with linear scan results:");
 			System.out.println(res1 == da.scav_lin(dc.getWz(), 582, 888, 1.5, 121));
-			System.out.println(res2 == da.bscwr_lin(dc.getAy(), 100, 500, 0.1, 0.2, groupSize));
+			System.out.println(res2 == da.bscwr_lin(dc.getAy(), 500, 100, 0.1, 0.2, 10));
 			System.out.println(res3 == da.scavts_lin(dc.getAy(), dc.getWx(), 50, 1000, 0.23, 2.2, 5));
 		}
 		catch(NoSuchElementException e)

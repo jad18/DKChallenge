@@ -73,16 +73,17 @@ public class DataAnalyzer
 		int groupIndex = indexBegin / groupSize;
 		int runCount = 0;
 
-		while(index <= indexEnd)
+		while(index >= indexEnd)
 		{
 			// if entire group is valid, then jump over it
-			if(index % groupSize == 0 &&
+			// note that we check if we're at the end of a group, not the front
+			if(index % groupSize == 4 &&
 			   rangeList.get(groupIndex).min >= thresholdLo &&
 			   rangeList.get(groupIndex).max <= thresholdHi)
 			{
 				runCount += rangeList.get(groupIndex).size;
-				index += rangeList.get(groupIndex).size;
-				groupIndex++;
+				index -= rangeList.get(groupIndex).size;
+				groupIndex--;
 			}
 			else
 			{
@@ -92,14 +93,14 @@ public class DataAnalyzer
 				else
 				{
 					runCount = 0;
-					indexBegin = index + 1;
+					indexBegin = index - 1;
 				}
 
-				index++;
-				if(index % groupSize == 0) groupIndex++;
+				index--;
+				if(index % groupSize == 4) groupIndex--;
 			}
 
-			if(runCount >= winLength) return indexBegin;
+			if(runCount >= winLength) return (indexBegin - winLength + 1);
 
 		}
 
@@ -163,9 +164,13 @@ public class DataAnalyzer
 		
 		if(runCount >= winLength)
 		{
-			int result2 = searchContinuityAboveValue(data2, indexBegin, index,
-													 threshold2, winLength);
-			if(result2 > 0) return result2;
+			try
+			{
+				int result2 = searchContinuityAboveValue(data2, indexBegin, index,
+													 	 threshold2, winLength);
+				return result2;
+			}
+			catch(NoSuchElementException e) {}
 		}
 
 		throw new NoSuchElementException();
@@ -236,7 +241,7 @@ public class DataAnalyzer
 		var dataArr = data.getDataArr();
 		int count = 0;
 
-		for(int i=indexBegin; i<indexEnd; i++)
+		for(int i=indexBegin; i<=indexEnd; i++)
 		{
 
 			if(dataArr.get(i) >= threshold)
@@ -260,18 +265,18 @@ public class DataAnalyzer
 		var dataArr = data.getDataArr();
 		int count = 0;
 
-		for(int i=indexBegin; i<indexEnd; i++)
+		for(int i=indexBegin; i>=indexEnd; i--)
 		{
 
 			if(dataArr.get(i) >= thresholdLo && dataArr.get(i) <= thresholdHi)
 			{
 				count++;
-				if(count >= winLength) return indexBegin;
+				if(count >= winLength) return i;
 			}
 			else
 			{
 				count = 0;
-				indexBegin = i + 1;
+				indexBegin = i - 1;
 			}
 		}
 		throw new NoSuchElementException();
@@ -285,7 +290,7 @@ public class DataAnalyzer
 		int count = 0;
 		int i;
 		 
-		for(i=indexBegin; i<indexEnd; i++)
+		for(i=indexBegin; i<=indexEnd; i++)
 		{
 
 			if(dataArr1.get(i) >= threshold1)
@@ -305,8 +310,12 @@ public class DataAnalyzer
 		
 		if(count >= winLength)
 		{
-			int result2 = scav_lin(data2, indexBegin, i, threshold2, winLength);
-			if(result2 > 0) return result2;
+			try
+			{
+				int result2 = scav_lin(data2, indexBegin, i, threshold2, winLength);
+				return result2;
+			}
+			catch(NoSuchElementException e) {}
 		}
 		
 		throw new NoSuchElementException();

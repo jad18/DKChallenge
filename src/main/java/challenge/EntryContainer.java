@@ -21,6 +21,7 @@ public class EntryContainer {
 			double max = min;
 			
 			int i = 1;
+			index++; //start at next value
 			
 			while(i < groupSize && index < data.size())
 			{
