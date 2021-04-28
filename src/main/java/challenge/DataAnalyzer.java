@@ -2,7 +2,8 @@ package challenge;
 
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 
 public class DataAnalyzer
@@ -27,9 +28,9 @@ public class DataAnalyzer
 	public Optional<Pair<Integer,Integer>> searchContinuityPairGeneral(EntryContainer data,
 								int indexBegin, int winLength, boolean getFullRange,
 								int indexChange, int groupEdge,
-								Function<Double,Boolean> checkThresholdMin,
-								Function<Double,Boolean> checkThresholdMax,
-								Function<Integer,Boolean> continueLoop)							 
+								Predicate<Double> checkThresholdMin,
+								Predicate<Double> checkThresholdMax,
+								Predicate<Integer> continueLoop)							 
 	{
 		var rangeList = data.getRangeList();
 		var dataArr = data.getDataArr();
@@ -42,12 +43,12 @@ public class DataAnalyzer
 		int groupIndex = indexBegin / groupSize;
 		int runCount = 0;
 
-		while(continueLoop.apply(index))
+		while(continueLoop.test(index))
 		{
 			// if entire group is valid, then jump over it
 			if(index % groupSize == groupEdge &&
-			   checkThresholdMin.apply(rangeList.get(groupIndex).min) &&
-			   checkThresholdMax.apply(rangeList.get(groupIndex).max))
+			   checkThresholdMin.test(rangeList.get(groupIndex).min) &&
+			   checkThresholdMax.test(rangeList.get(groupIndex).max))
 			{
 				runCount += rangeList.get(groupIndex).size;
 				index += indexChange * rangeList.get(groupIndex).size;
@@ -57,7 +58,7 @@ public class DataAnalyzer
 			{
 				// otherwise, search through each value inside
 				double val = dataArr.get(index);
-				if(checkThresholdMin.apply(val) && checkThresholdMax.apply(val))
+				if(checkThresholdMin.test(val) && checkThresholdMax.test(val))
 					runCount++;
 				else
 				{
@@ -84,10 +85,10 @@ public class DataAnalyzer
 														int indexBegin, int indexEnd,
 														double thresholdLo, int winLength,
 														boolean checkFullRange, 
-														Function<Double,Boolean> checkThresholdMax)
+														Predicate<Double> checkThresholdMax)
 	{
-		Function<Double,Boolean> checkThresholdMin = (value) -> (value >= thresholdLo);
-		Function<Integer,Boolean> continueLoopCond = (index) -> (index <= indexEnd);
+		Predicate<Double> checkThresholdMin = (value) -> (value >= thresholdLo);
+		Predicate<Integer> continueLoopCond = (index) -> (index <= indexEnd);
 
 
 		return searchContinuityPairGeneral(data, indexBegin, winLength, checkFullRange, 1, 0,
@@ -101,7 +102,7 @@ public class DataAnalyzer
 			int indexBegin, int indexEnd,
 			double threshold, int winLength)
 	{
-		Function<Double,Boolean> checkThresholdMax = (value) -> (true);
+		Predicate<Double> checkThresholdMax = (value) -> (true);
 		
 		var result = searchContinuityAboveValuePair(data, indexBegin, indexEnd, threshold, winLength,
 													false, checkThresholdMax);
@@ -117,9 +118,9 @@ public class DataAnalyzer
 												int indexEnd, double thresholdLo,
 												double thresholdHi, int winLength)
 	{
-		Function<Double,Boolean> checkThresholdMin = (value) -> (value >= thresholdLo);
-		Function<Double,Boolean> checkThresholdMax = (value) ->(value <= thresholdHi);
-		Function<Integer,Boolean> continueLoopCond = (index) -> (index >= indexEnd);
+		Predicate<Double> checkThresholdMin = (value) -> (value >= thresholdLo);
+		Predicate<Double> checkThresholdMax = (value) ->(value <= thresholdHi);
+		Predicate<Integer> continueLoopCond = (index) -> (index >= indexEnd);
 		
 		
 		var result = searchContinuityPairGeneral(data, indexBegin, winLength, false, -1, 4,
@@ -140,7 +141,7 @@ public class DataAnalyzer
 		var rangeList1 = data1.getRangeList();
 		var rangeList2 = data2.getRangeList();
 		
-		Function<Double,Boolean> checkThresholdMax = (value) -> (true);
+		Predicate<Double> checkThresholdMax = (value) -> (true);
 		
 		if(rangeList1.size() <= 0 || rangeList2.size() <= 0) return Optional.empty();
 
@@ -168,12 +169,12 @@ public class DataAnalyzer
 	}
 
 
-	ArrayList<Pair<Integer,Integer>> searchMultiContinuityWithinRange(EntryContainer data,
+	public ArrayList<Pair<Integer,Integer>> searchMultiContinuityWithinRange(EntryContainer data,
 										  						  int indexBegin, int indexEnd,
 										  						  double thresholdLo,
 										  						  double thresholdHi, int winLength)
 	{
-		Function<Double,Boolean> checkThresholdMax = (value) -> (value <= thresholdHi);
+		Predicate<Double> checkThresholdMax = (value) -> (value <= thresholdHi);
 		ArrayList<Pair<Integer, Integer>> result = new ArrayList<Pair<Integer, Integer>>();
 		
 		Optional<Pair<Integer,Integer>> pair_res;
@@ -219,6 +220,34 @@ public class DataAnalyzer
 		}
 		return Optional.empty();
 	}
+	
+	
+	// Note: implement linear scans with generics
+	// Allows us to pass in a pair of ArrayLists as data and then check the
+	// threshold that way --> can implement SCAVTS using this function without
+	// more function calls
+	public <T> Optional<Integer> scav_lin2(T data, int indexBegin, int indexEnd,
+			 			int winLength, BiPredicate<T,Integer> checkThreshold)
+	{
+		int count = 0;
+
+		for(int i=indexBegin; i<=indexEnd; i++)
+		{
+
+			if(checkThreshold.test(data, i))
+			{
+				count++;
+				if(count >= winLength) return Optional.of(indexBegin);
+			}
+			else
+			{
+				count = 0;
+				indexBegin = i + 1;
+			}
+		}
+		return Optional.empty();
+	}
+
 	
 	public Optional<Integer> bscwr_lin(EntryContainer data, int indexBegin, int indexEnd,
 				 		 double thresholdLo, double thresholdHi, int winLength)
@@ -280,7 +309,7 @@ public class DataAnalyzer
 		return Optional.empty();
 	}
 	
-	ArrayList<Pair<Integer,Integer>> smcwr_lin(EntryContainer data, int indexBegin, int indexEnd,
+	public ArrayList<Pair<Integer,Integer>> smcwr_lin(EntryContainer data, int indexBegin, int indexEnd,
 			  							       double thresholdLo, double thresholdHi, int winLength)
 	{
 		var dataArr = data.getDataArr();
